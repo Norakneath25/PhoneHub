@@ -1,0 +1,93 @@
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
+import type { Phone } from '@/types/Phone';
+import PhoneCards from '../components/Card.vue';
+
+const phones = ref<Phone[]>([]);
+const selectedBrand = ref('All');
+
+onMounted(async () => {
+    const response = await fetch('/api/phones');
+    const data = await response.json();
+    phones.value = data.data;
+});
+
+const brands = computed(() => {
+    const unique = [...new Set(phones.value.map((p) => p.brand))];
+
+    return ['All', ...unique];
+});
+
+const filteredPhones = computed(() => {
+    if (selectedBrand.value === 'All') {
+        return phones.value;
+    }
+
+    return phones.value.filter((p) => p.brand === selectedBrand.value);
+});
+
+const sortBy = ref('latest');
+
+const sortedPhones = computed(() => {
+    const filtered = filteredPhones.value; // use your existing filter first
+
+    if (sortBy.value === 'latest') {
+        return [...filtered].sort(
+            (a, b) =>
+                new Date(b.release_date).getTime() -
+                new Date(a.release_date).getTime(),
+        );
+    }
+
+    if (sortBy.value === 'price') {
+        return [...filtered].sort((a, b) => a.price - b.price);
+    }
+
+    if (sortBy.value === 'rating') {
+        return [...filtered].sort((a, b) => b.rating - a.rating);
+    }
+
+    return filtered;
+});
+</script>
+
+<template>
+    <div class="container mx-auto">
+        <!-- Brand Filter -->
+        <div class="mb-8 flex flex-wrap gap-2">
+            <button
+                v-for="brand in brands"
+                :key="brand"
+                @click="selectedBrand = brand"
+                :class="
+                    selectedBrand === brand
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                "
+                class="rounded-full px-4 py-1.5 text-sm transition-colors"
+            >
+                {{ brand }}
+            </button>
+        </div>
+
+        <div class="mb-4 flex gap-2">
+            <button
+                v-for="sort in ['latest', 'price', 'rating']"
+                :key="sort"
+                @click="sortBy = sort"
+                :class="
+                    sortBy === sort
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-800 text-gray-400'
+                "
+                class="rounded-full px-4 py-1.5 text-sm capitalize transition-colors"
+            >
+                {{ sort }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Pass filtered phones to PhoneCards -->
+    <PhoneCards :phones="sortedPhones" />
+    
+</template>
