@@ -1,6 +1,6 @@
 <template>
     <nav
-        class="flex items-center justify-between  bg-gray-900 px-4 py-4 text-white shadow-md"
+        class="flex items-center justify-between bg-gray-900 px-4 py-4 text-white shadow-md"
     >
         <div class="text-xl font-bold">PhoneHub</div>
         <div class="hidden space-x-6 md:flex">
@@ -13,8 +13,15 @@
         <div class="flex items-center justify-center space-x-2.5">
             <input
                 type="text"
-                class="block w-full rounded border border-none bg-white px-2.5 py-2 text-sm text-gray-900 shadow-xs focus:outline-none"
-                placeholder="Search"
+                :value="searchStore.query"
+                @input="
+                    (e) =>
+                        searchStore.setQuery(
+                            (e.target as HTMLInputElement).value,
+                        )
+                "
+                placeholder="Search phones..."
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
             <!-- login icon -->
             <button>
@@ -66,6 +73,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+
+import { useSearchStore } from '@/stores/searchStore';
+
+const searchStore = useSearchStore();
 
 const isOpen = ref(false);
 const toggleMenu = () => {

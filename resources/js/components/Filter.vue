@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
+import { useSearchStore } from '@/stores/searchStore';
 import type { Phone } from '@/types/Phone';
 import PhoneCards from '../components/Card.vue';
 
 const phones = ref<Phone[]>([]);
+
 const selectedBrand = ref('All');
+
+const searchStore = useSearchStore();
 
 onMounted(async () => {
     const response = await fetch('/api/phones');
@@ -19,11 +23,25 @@ const brands = computed(() => {
 });
 
 const filteredPhones = computed(() => {
-    if (selectedBrand.value === 'All') {
-        return phones.value;
+    let result = phones.value;
+
+    // Brand filter
+    if (selectedBrand.value !== 'All') {
+        result = result.filter((p) => p.brand === selectedBrand.value);
     }
 
-    return phones.value.filter((p) => p.brand === selectedBrand.value);
+    // Search filter
+    if (searchStore.query) {
+        result = result.filter(
+            (p) =>
+                p.brand
+                    .toLowerCase()
+                    .includes(searchStore.query.toLowerCase()) ||
+                p.model.toLowerCase().includes(searchStore.query.toLowerCase()),
+        );
+    }
+
+    return result;
 });
 
 const sortBy = ref('latest');
@@ -89,5 +107,4 @@ const sortedPhones = computed(() => {
 
     <!-- Pass filtered phones to PhoneCards -->
     <PhoneCards :phones="sortedPhones" />
-    
 </template>
