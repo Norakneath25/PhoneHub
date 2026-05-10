@@ -21,25 +21,28 @@
                         )
                 "
                 placeholder="Search phones..."
-                class="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <!-- login icon -->
-            <button>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="size-6"
+            <!-- Auth buttons -->
+            <div v-if="auth?.user" class="flex items-center gap-2">
+                <span class="text-sm text-gray-400">{{ auth.user.name }}</span>
+                <Link
+                    href="/logout"
+                    method="post"
+                    as="button"
+                    class="text-sm text-red-400 transition-colors hover:text-red-300"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                    />
-                </svg>
-            </button>
+                    Logout
+                </Link>
+            </div>
+            <div v-else>
+                <a
+                    href="/login"
+                    class="text-sm text-blue-400 transition-colors hover:text-blue-300"
+                    >Login</a
+                >
+            </div>
             <!-- bar -->
             <button @click="toggleMenu" class="md:hidden">
                 <svg
@@ -72,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 import { useSearchStore } from '@/stores/searchStore';
 
@@ -82,6 +86,11 @@ const isOpen = ref(false);
 const toggleMenu = () => {
     isOpen.value = !isOpen.value;
 };
+
+const page = usePage();
+const auth = computed(
+    () => page.props.auth as { user: { name: string } | null },
+);
 </script>
 
 <style scoped></style>

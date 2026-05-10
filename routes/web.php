@@ -34,4 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/phones/{id}', function ($id) {
+    $phone = Phone::with('reviews')->findOrFail($id);
+    return Inertia::render('PhoneDetail', [
+        'phone' => $phone,
+        'auth' => Auth::user(),
+    ]);
+});
+
 require __DIR__.'/auth.php';
