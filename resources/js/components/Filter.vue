@@ -1,36 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useSearchStore } from '@/stores/searchStore';
 import type { Phone } from '@/types/Phone';
 import PhoneCards from '../components/Card.vue';
 
-const phones = ref<Phone[]>([]);
+// ✅ defineProps outside onMounted
+const props = defineProps<{
+    phones: Phone[];
+}>();
 
+const phones = ref<Phone[]>(props.phones); // ← initialize with props
 const selectedBrand = ref('All');
-
 const searchStore = useSearchStore();
-
-onMounted(async () => {
-    const response = await fetch('/api/phones');
-    const data = await response.json();
-    phones.value = data.data;
-});
 
 const brands = computed(() => {
     const unique = [...new Set(phones.value.map((p) => p.brand))];
-
     return ['All', ...unique];
 });
 
 const filteredPhones = computed(() => {
     let result = phones.value;
-
-    // Brand filter
     if (selectedBrand.value !== 'All') {
         result = result.filter((p) => p.brand === selectedBrand.value);
     }
-
-    // Search filter
     if (searchStore.query) {
         result = result.filter(
             (p) =>
@@ -40,15 +32,12 @@ const filteredPhones = computed(() => {
                 p.model.toLowerCase().includes(searchStore.query.toLowerCase()),
         );
     }
-
     return result;
 });
 
 const sortBy = ref('latest');
-
 const sortedPhones = computed(() => {
-    const filtered = filteredPhones.value; // use your existing filter first
-
+    const filtered = filteredPhones.value;
     if (sortBy.value === 'latest') {
         return [...filtered].sort(
             (a, b) =>
@@ -56,15 +45,12 @@ const sortedPhones = computed(() => {
                 new Date(a.release_date).getTime(),
         );
     }
-
     if (sortBy.value === 'price') {
         return [...filtered].sort((a, b) => a.price - b.price);
     }
-
     if (sortBy.value === 'rating') {
         return [...filtered].sort((a, b) => b.rating - a.rating);
     }
-
     return filtered;
 });
 </script>
