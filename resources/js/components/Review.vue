@@ -99,11 +99,12 @@
                             >{{ review.rating }}/5</span
                         >
                     </div>
-                    <p class="text-sm text-gray-300">{{ review.comment }}</p>
-                </div>
-
-                <div v-if="reviews.length === 0" class="text-sm text-gray-500">
-                    No reviews yet. Be the first to review!
+                    <p class="mb-2 text-sm text-gray-300">
+                        {{ review.comment }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        — {{ review.user?.name ?? 'Anonymous' }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -116,7 +117,12 @@ import { ref } from 'vue';
 const showAlert = ref(false);
 
 const props = defineProps<{
-    reviews: { id: number; rating: number; comment: string }[];
+    reviews: {
+        id: number;
+        rating: number;
+        comment: string;
+        user?: { name: string }; // ← make user optional with ?
+    }[];
     phoneId: number;
     auth: { id: number; name: string } | null;
 }>();
@@ -155,7 +161,6 @@ const submitReview = async () => {
     });
 
     const data = await response.json();
-    console.log('Response data:', data);
     emit('reviewAdded', data.data);
 
     comment.value = '';

@@ -3,26 +3,28 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Phone;
+use App\Models\Review;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Home
 Route::get('/', function () {
     $phones = Phone::all();
+
     return Inertia::render('Home', ['phones' => $phones]);
 })->name('home');
 
 // Phone detail
 Route::get('/phones/{id}', function ($id) {
-    $phone = Phone::with('reviews')->findOrFail($id);
+    $phone = Phone::with('reviews.user')->findOrFail($id);
     return Inertia::render('PhoneDetail', ['phone' => $phone]);
 });
 
 // Compare
 Route::get('/compare', function () {
     $phones = Phone::all();
+
     return Inertia::render('Compare', ['phones' => $phones]);
 })->name('compare');
 
@@ -45,7 +47,7 @@ Route::middleware('auth')->group(function () {
             'rating' => 'required|numeric|min:1|max:5',
         ]);
 
-        $review = \App\Models\Review::create([
+        $review = Review::create([
             'phone_id' => $request->phone_id,
             'user_id' => auth()->id(),
             'comment' => $request->comment,
@@ -67,6 +69,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/phones/{id}/edit', [AdminController::class, 'edit'])->name('admin.edit');
     Route::put('/phones/{id}', [AdminController::class, 'update'])->name('admin.update');
     Route::delete('/phones/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
+    Route::get('/reviews', [AdminController::class, 'reviews'])->name('admin.reviews');
+    Route::delete('/reviews/{id}', [AdminController::class, 'destroyReview'])->name('admin.reviews.destroy');
 });
 
 require __DIR__.'/auth.php';

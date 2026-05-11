@@ -4,6 +4,7 @@ export interface Review {
     user_id: number;
     comment: string;
     rating: number;
+    user?: { name: string };
     created_at: string;
     updated_at: string;
 }

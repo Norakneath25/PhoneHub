@@ -21,14 +21,23 @@ const confirmDelete = (id: number) => {
 
         <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
             <!-- Header -->
+
             <div class="mb-8 flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-white">Admin Panel</h1>
-                <Link
-                    href="/admin/phones/create"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-                >
-                    + Add Phone
-                </Link>
+                <div class="flex gap-3">
+                    <a
+                        href="/admin/reviews"
+                        class="rounded-lg border border-gray-600 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-800"
+                    >
+                        Manage Reviews
+                    </a>
+                    <Link
+                        href="/admin/phones/create"
+                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+                    >
+                        + Add Phone
+                    </Link>
+                </div>
             </div>
 
             <!-- Phones Table -->
