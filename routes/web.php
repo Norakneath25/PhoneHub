@@ -16,7 +16,7 @@ Route::get('/', function () {
 })->name('home');
 
 // Phone detail
-Route::get('/phones/{id}', function ($id) {
+Route::get('/phones/{id}', function (string $id) {
     $phone = Phone::with('reviews.user')->findOrFail($id);
     return Inertia::render('PhoneDetail', ['phone' => $phone]);
 });
