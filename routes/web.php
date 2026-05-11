@@ -1,13 +1,18 @@
 <?php
-use Illuminate\Support\Facades\Auth;
+
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Phone;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\AdminController;
 
 // Home
-Route::inertia('/', 'Home')->name('home');
+Route::get('/', function () {
+    $phones = Phone::all();
+    return Inertia::render('Home', ['phones' => $phones]);
+})->name('home');
 
 // Phone detail
 Route::get('/phones/{id}', function ($id) {
@@ -26,28 +31,35 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// update phone
-Route::get('/', function () {
-    $phones = Phone::all();
-    return Inertia::render('Home', ['phones' => $phones]);
-})->name('home');
-
 // Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Reviews
+    Route::post('/reviews', function (Request $request) {
+        $request->validate([
+            'phone_id' => 'required|exists:phones,id',
+            'comment' => 'required|string|max:1000',
+            'rating' => 'required|numeric|min:1|max:5',
+        ]);
+
+        $review = \App\Models\Review::create([
+            'phone_id' => $request->phone_id,
+            'user_id' => auth()->id(),
+            'comment' => $request->comment,
+            'rating' => $request->rating,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $review,
+        ]);
+    });
 });
 
-Route::get('/phones/{id}', function ($id) {
-    $phone = Phone::with('reviews')->findOrFail($id);
-    return Inertia::render('PhoneDetail', [
-        'phone' => $phone,
-        'auth' => Auth::user(),
-    ]);
-});
-
-// admin control
+// Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/phones/create', [AdminController::class, 'create'])->name('admin.create');

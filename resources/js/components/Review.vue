@@ -48,25 +48,6 @@
                         ✕
                     </button>
                 </div>
-                <!-- Alert -->
-                <div
-                    v-if="showAlert"
-                    class="mb-4 flex items-center justify-between rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-4 py-3"
-                >
-                    <p class="text-sm text-yellow-400">
-                        Please
-                        <a href="/login" class="underline hover:text-yellow-300"
-                            >login</a
-                        >
-                        to rate or review this phone.
-                    </p>
-                    <button
-                        @click="showAlert = false"
-                        class="ml-4 text-yellow-400 hover:text-yellow-300"
-                    >
-                        ✕
-                    </button>
-                </div>
 
                 <!-- Comment - only logged in users -->
                 <div v-if="props.auth">
@@ -78,7 +59,7 @@
                     />
                     <button
                         @click="submitReview"
-                        class="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-500"
+                        class="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
                     >
                         Submit Review
                     </button>
@@ -130,7 +111,6 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const showAlert = ref(false);
@@ -144,28 +124,41 @@ const props = defineProps<{
 const comment = ref('');
 const selectedRating = ref(0);
 
-const submitReview = async () => {
-    if (!comment.value || selectedRating.value === 0) {
-        return;
-    }
+const emit = defineEmits(['reviewAdded']);
 
-    await fetch('/api/reviews', {
+const submitReview = async () => {
+    if (!comment.value || selectedRating.value === 0) return;
+
+    // Get CSRF token first
+    await fetch('/sanctum/csrf-cookie', {
+        credentials: 'include',
+    });
+
+    const response = await fetch('/reviews', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'X-XSRF-TOKEN': decodeURIComponent(
+                document.cookie
+                    .split('; ')
+                    .find((row) => row.startsWith('XSRF-TOKEN='))
+                    ?.split('=')[1] ?? '',
+            ),
         },
+        credentials: 'include',
         body: JSON.stringify({
             phone_id: props.phoneId,
-            user_id: props.auth?.id,
             comment: comment.value,
             rating: selectedRating.value,
         }),
     });
 
+    const data = await response.json();
+    console.log('Response data:', data);
+    emit('reviewAdded', data.data);
+
     comment.value = '';
     selectedRating.value = 0;
-
-    router.reload({ only: ['phone'] }); // ← reload only phone data
 };
 </script>

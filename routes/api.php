@@ -9,10 +9,14 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::apiResource('/phones', PhoneController::class);
 
-Route::apiResource('/phones',PhoneController::class);
+// Public review routes
+Route::get('/reviews', [ReviewController::class, 'index']);
+Route::get('/reviews/{id}', [ReviewController::class, 'getIndexById']);
 
-Route::get('/reviews/',[ReviewController::class,'index']);
-Route::get('/reviews/{id}',[ReviewController::class,'getIndexById']);
-Route::post('/reviews/',[ReviewController::class,'store']);
-Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+// Protected review routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+});

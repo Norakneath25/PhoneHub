@@ -40,12 +40,12 @@ class ReviewController extends Controller
         $request->validate([
             'phone_id' => 'required|exists:phones,id',
             'comment' => 'required|string|max:1000',
-            'rating' => 'required|integer|min:1|max:5',
+            'rating' => 'required|numeric|min:1|max:5',
         ]);
 
         $review = Review::create([
             'phone_id' => $request->phone_id,
-            'user_id' => $request->user_id, // no user log in yet use user_id for now
+            'user_id' => auth()->id(), // ← real logged in user
             'comment' => $request->comment,
             'rating' => $request->rating,
         ]);
