@@ -8,13 +8,9 @@ const props = defineProps<{
     phones: Phone[];
 }>();
 
-const scrapeUrl = ref('');
-const scraping = ref(false);
-
-const siteType = ref('auto');
-
 const bulkScrapeUrl = ref('');
 const bulkScraping = ref(false);
+const scrapeLimit = ref('5');
 
 // selected phones
 const selectedPhones = ref<number[]>([]);
@@ -48,30 +44,16 @@ const deleteSelected = () => {
         router.post('/admin/phones/bulk-delete', {
             ids: selectedPhones.value,
         });
-
         selectedPhones.value = [];
     }
 };
 
-const submitScrape = () => {
-    scraping.value = true;
-
-    useForm({
-        url: scrapeUrl.value,
-    }).post('/admin/scrape', {
-        onFinish: () => {
-            scraping.value = false;
-            scrapeUrl.value = '';
-        },
-    });
-};
-
 const submitBulkScrape = () => {
     bulkScraping.value = true;
-
     useForm({
         url: bulkScrapeUrl.value,
-        site_type: siteType.value,
+        site_type: 'nika2u',
+        limit: scrapeLimit.value,
     }).post('/admin/bulk-scrape', {
         onFinish: () => {
             bulkScraping.value = false;
@@ -87,7 +69,6 @@ const submitBulkScrape = () => {
 
         <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
             <!-- Header -->
-
             <div class="mb-8 flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-white">Admin Panel</h1>
                 <div class="flex gap-3">
@@ -120,55 +101,16 @@ const submitBulkScrape = () => {
                 {{ $page.props.flash.error }}
             </div>
 
-            <!-- Scrape Form -->
-            <div class="mb-8 rounded-xl bg-gray-800 p-6">
-                <h2 class="mb-4 font-semibold text-white">
-                    Scrape Phone from URL
-                </h2>
-                <form @submit.prevent="submitScrape" class="flex gap-3">
-                    <input
-                        v-model="scrapeUrl"
-                        type="url"
-                        placeholder="https://web.nika2u.com/product/..."
-                        class="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                        type="submit"
-                        :disabled="scraping"
-                        class="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-                    >
-                        {{ scraping ? 'Scraping...' : 'Scrape' }}
-                    </button>
-                </form>
-            </div>
-
             <!-- Bulk Scrape Form -->
             <div class="mb-8 rounded-xl bg-gray-800 p-6">
                 <h2 class="mb-1 font-semibold text-white">
-                    Bulk Scrape from Category
+                    Bulk Scrape from Nika2u
                 </h2>
                 <p class="mb-4 text-xs text-gray-400">
-                    Paste a category URL to scrape all phones from it
+                    Paste a Nika2u category URL to scrape phones
                 </p>
 
                 <form @submit.prevent="submitBulkScrape" class="space-y-4">
-                    <!-- Site Selector -->
-                    <div>
-                        <label class="mb-1 block text-xs text-gray-400"
-                            >Website</label
-                        >
-                        <select
-                            v-model="siteType"
-                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="auto">Auto Detect</option>
-                            <option value="nika2u">Nika2u</option>
-                            <option value="soklyphone">Sokly Phone</option>
-                            <option value="imobi">iMobi</option>
-                        </select>
-                    </div>
-
-                    <!-- URL Input -->
                     <div>
                         <label class="mb-1 block text-xs text-gray-400"
                             >Category URL</label
@@ -176,9 +118,25 @@ const submitBulkScrape = () => {
                         <input
                             v-model="bulkScrapeUrl"
                             type="url"
-                            placeholder="https://web.nika2u.com/products?category_id=1"
+                            placeholder="https://web.nika2u.com/category/..."
                             class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-xs text-gray-400"
+                            >Limit (phones to scrape)</label
+                        >
+                        <select
+                            v-model="scrapeLimit"
+                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="5">5 phones (demo)</option>
+                            <option value="10">10 phones</option>
+                            <option value="20">20 phones</option>
+                            <option value="50">50 phones</option>
+                            <option value="100">All (slow)</option>
+                        </select>
                     </div>
 
                     <button
@@ -224,7 +182,6 @@ const submitBulkScrape = () => {
                                     class="h-4 w-4"
                                 />
                             </th>
-
                             <th class="px-6 py-4 text-left">Brand</th>
                             <th class="px-6 py-4 text-left">Model</th>
                             <th class="px-6 py-4 text-left">Price</th>
@@ -248,7 +205,6 @@ const submitBulkScrape = () => {
                                     class="h-4 w-4"
                                 />
                             </td>
-
                             <td class="px-6 py-4">{{ phone.brand }}</td>
                             <td class="px-6 py-4">{{ phone.model }}</td>
                             <td class="px-6 py-4">${{ phone.price }}</td>
@@ -262,7 +218,6 @@ const submitBulkScrape = () => {
                                 >
                                     Edit
                                 </Link>
-
                                 <button
                                     @click="confirmDelete(phone.id)"
                                     class="text-red-400 transition-colors hover:text-red-300"

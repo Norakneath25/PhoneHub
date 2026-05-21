@@ -75,7 +75,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::delete('/reviews/{id}', [AdminController::class, 'destroyReview'])->name('admin.reviews.destroy');
     
     //scrape
-    Route::post('/scrape', [AdminController::class, 'scrape'])->name('admin.scrape');
     Route::post('/bulk-scrape', [AdminController::class, 'bulkScrape'])->name('admin.bulk-scrape');
 });
 
