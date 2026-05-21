@@ -8,3 +8,6 @@ admin
     created_at: "2026-05-02 06:43:58",
     updated_at: "2026-05-10 12:19:02",
     is_admin: 1,
+
+
+so some website i can't scrape data cause the layout is different let make a few bulk scrape for like 3 website https://web.nika2u.com/products?category_id=1&data_from=category, https://www.soklyphone.com/products?category=mobile-phone, https://imobi.biz/en/products/smartphones

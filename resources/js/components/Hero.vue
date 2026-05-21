@@ -1,41 +1,50 @@
 <template>
-    <section class="bg-gray-900 text-white py-28">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-
+    <section class="bg-gray-900 py-28 text-white">
+        <div class="mx-auto max-w-6xl px-6 text-center">
             <!-- Badge -->
-            <div class="inline-flex items-center gap-2 bg-gray-800 text-gray-400 text-sm px-4 py-1.5 rounded-full mb-6 border border-gray-700">
-                <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
+            <div
+                class="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800 px-4 py-1.5 text-sm text-gray-400"
+            >
+                <span class="h-2 w-2 rounded-full bg-blue-400"></span>
                 Updated daily with latest prices
             </div>
 
             <!-- Title -->
-            <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 class="mb-6 text-5xl font-bold leading-tight md:text-6xl">
                 Find Your Perfect
                 <span class="text-blue-400"> Phone</span>
             </h1>
 
             <!-- Subtitle -->
-            <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-10">
-                Discover specs, compare models, and find the best prices across stores — all in one place.
+            <p class="mx-auto mb-10 max-w-2xl text-lg text-gray-400">
+                Discover specs, compare models, and find the best prices across
+                stores — all in one place.
             </p>
 
             <!-- Search Bar -->
-            <div class="flex items-center max-w-xl mx-auto mb-10">
+            <div class="mx-auto mb-10 flex max-w-xl items-center">
                 <input
                     type="text"
                     :value="searchStore.query"
-                    @input="(e) => searchStore.setQuery((e.target as HTMLInputElement).value)"
+                    @input="
+                        (e) =>
+                            searchStore.setQuery(
+                                (e.target as HTMLInputElement).value,
+                            )
+                    "
                     placeholder="Search phones..."
-                    class="w-full rounded-l-xl bg-gray-800 border border-gray-700 px-5 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full rounded-l-xl border border-gray-700 bg-gray-800 px-5 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-r-xl text-sm font-medium transition-colors">
+                <button
+                    @click="handleSearch"
+                    class="rounded-r-xl bg-blue-600 px-6 py-3 text-sm font-medium transition-colors hover:bg-blue-500"
+                >
                     Search
                 </button>
             </div>
 
-
             <!-- Stats -->
-            <div class="flex justify-center gap-12 mt-16">
+            <div class="mt-16 flex justify-center gap-12">
                 <div>
                     <p class="text-2xl font-bold">500+</p>
                     <p class="text-sm text-gray-500">Phones</p>
@@ -55,5 +64,13 @@
 
 <script setup lang="ts">
 import { useSearchStore } from '@/stores/searchStore';
+
 const searchStore = useSearchStore();
+
+const handleSearch = () => {
+    const section = document.getElementById('phones-section');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
+};
 </script>

@@ -17,16 +17,19 @@ const searchStore = useSearchStore();
 
 const brands = computed(() => {
     const unique = [...new Set(phones.value.map((p) => p.brand))];
+    
     return ['All', ...unique];
 });
 
 const rams = computed(() => {
     const unique = [...new Set(phones.value.map((p) => p.ram))];
+
     return ['All', ...unique.sort()];
 });
 
 const storages = computed(() => {
     const unique = [...new Set(phones.value.map((p) => p.storage))];
+
     return ['All', ...unique.sort()];
 });
 
@@ -62,17 +65,21 @@ const sortedPhones = computed(() => {
     if (sortBy.value === 'recommended') {
         return [...filtered].sort((a, b) => b.rating - a.rating);
     }
+
     if (sortBy.value === 'latest') {
         return [...filtered].sort(
             (a, b) => new Date(b.release_date).getTime() - new Date(a.release_date).getTime(),
         );
     }
+
     if (sortBy.value === 'price_low') {
         return [...filtered].sort((a, b) => a.price - b.price);
     }
+
     if (sortBy.value === 'price_high') {
         return [...filtered].sort((a, b) => b.price - a.price);
     }
+
     return filtered;
 });
 </script>

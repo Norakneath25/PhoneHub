@@ -21,40 +21,61 @@ const isInCompare = (phone: Phone) => {
         <div
             v-for="phone in phones"
             :key="phone.id"
-            class="overflow-hidden rounded-xl bg-gray-800 transition-all hover:ring-1 hover:ring-blue-500"
+            class="group overflow-hidden rounded-2xl bg-gray-800 transition-all hover:ring-1 hover:ring-blue-500"
         >
-            <img
-                :src="phone.image"
-                :alt="phone.model"
-                class="h-48 w-full object-cover"
-            />
+            <!-- Image -->
+            <div class="bg-gray-750 relative h-64 overflow-hidden">
+                <img
+                    :src="phone.image"
+                    :alt="phone.model"
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+            </div>
+
+            <!-- Content -->
             <div class="p-4">
-                <p class="text-xs tracking-wide text-gray-500 uppercase">
+                <p class="text-xs uppercase tracking-widest text-gray-500">
                     {{ phone.brand }}
                 </p>
-                <h3 class="mt-0.5 mb-3 font-semibold text-white">
+                <h3 class="mb-3 mt-1 font-semibold leading-tight text-white">
                     {{ phone.model }}
                 </h3>
-                <div class="mb-4 space-y-1 text-xs text-gray-400">
-                    <p>{{ phone.ram }} RAM · {{ phone.storage }}</p>
-                    <p>{{ phone.battery }}</p>
+
+                <!-- Specs -->
+                <div class="mb-4 space-y-1.5 text-xs text-gray-400">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-gray-600">RAM</span>
+                        <span>{{ phone.ram }}</span>
+                        <span class="text-gray-600">·</span>
+                        <span class="text-gray-600">Storage</span>
+                        <span>{{ phone.storage }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-gray-600">Battery</span>
+                        <span>{{ phone.battery }}</span>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <p class="font-bold text-blue-400">${{ phone.price }}</p>
-                    <button>
-                        <a
-                            :href="`/phones/${phone.id}`"
-                            class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white transition-colors hover:bg-blue-700"
-                            >View</a
-                        >
-                    </button>
+
+                <!-- Price + View -->
+                <div class="mb-3 flex items-center justify-between">
+                    <p class="text-lg font-bold text-blue-400">
+                        ${{ phone.price }}
+                    </p>
+                    <a
+                        :href="`/phones/${phone.id}`"
+                        class="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-500"
+                    >
+                        View
+                    </a>
                 </div>
+
+                <!-- Compare -->
                 <button
                     @click="compareStore.addPhone(phone)"
                     :disabled="
                         isInCompare(phone) || compareStore.phones.length >= 3
                     "
-                    class="mt-2 w-full rounded-lg border py-1.5 text-xs transition-colors"
+                    class="w-full rounded-lg border py-1.5 text-xs transition-colors"
                     :class="
                         isInCompare(phone)
                             ? 'cursor-default border-green-600 text-green-400'

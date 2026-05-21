@@ -75,4 +75,16 @@ class PhoneController extends Controller
             'message' => 'Phone deleted successfully',
         ], 200);
     }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:phones,id',
+        ]);
+
+        Phone::whereIn('id', $request->ids)->delete();
+
+        return back()->with('success', 'Selected phones deleted successfully');
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Phone;
 use App\Models\Review;
@@ -21,6 +22,7 @@ Route::get('/phones/{id}', function (string $id) {
     return Inertia::render('PhoneDetail', ['phone' => $phone]);
 });
 
+Route::post('/admin/phones/bulk-delete', [PhoneController::class, 'bulkDelete']);
 // Compare
 Route::get('/compare', function () {
     $phones = Phone::all();
@@ -71,6 +73,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::delete('/phones/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
     Route::get('/reviews', [AdminController::class, 'reviews'])->name('admin.reviews');
     Route::delete('/reviews/{id}', [AdminController::class, 'destroyReview'])->name('admin.reviews.destroy');
+    
+    //scrape
+    Route::post('/scrape', [AdminController::class, 'scrape'])->name('admin.scrape');
+    Route::post('/bulk-scrape', [AdminController::class, 'bulkScrape'])->name('admin.bulk-scrape');
 });
 
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';

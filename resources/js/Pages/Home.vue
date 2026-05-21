@@ -2,7 +2,10 @@
     <div class="bg-gray-900">
         <Navbar />
         <Hero />
-        <Filter :phones="phones" />
+        <div id="phones-section">
+            <!-- ← add this wrapper -->
+            <Filter :phones="phones" />
+        </div>
         <CompareBar />
         <Footer />
     </div>
@@ -14,7 +17,7 @@ import Filter from '@/components/Filter.vue';
 import Footer from '@/components/Footer.vue';
 import Hero from '@/components/Hero.vue';
 import Navbar from '@/components/Navbar.vue';
-import { Phone } from '@/types/Phone';
+import type { Phone } from '@/types/Phone';
 
 defineProps<{
     phones: Phone[];

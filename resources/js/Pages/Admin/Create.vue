@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Navbar from '@/components/Navbar.vue';
 import { useForm } from '@inertiajs/vue3';
+import Navbar from '@/components/Navbar.vue';
 
 const form = useForm({
     brand: '',
