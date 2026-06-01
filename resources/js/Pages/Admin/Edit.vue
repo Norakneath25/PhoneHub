@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Navbar from '@/components/Navbar.vue';
+import Navbar from '@/Components/Site/Navbar.vue';
 import { useForm } from '@inertiajs/vue3';
 import type { Phone } from '@/types/Phone';
 

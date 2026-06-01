@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
@@ -19,79 +20,98 @@ const submit = () => {
 <template>
     <Head title="Register" />
 
-    <div class="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div class="flex min-h-screen items-center justify-center bg-gray-950 px-4">
         <div class="w-full max-w-md">
-
             <!-- Logo -->
-            <div class="text-center mb-8">
+            <div class="mb-8 text-center">
                 <h1 class="text-2xl font-bold text-white">PhoneHub</h1>
-                <p class="text-gray-400 text-sm mt-1">Create your account</p>
+                <p class="mt-1 text-sm text-gray-400">Create your account</p>
             </div>
 
             <!-- Card -->
-            <div class="bg-gray-800 rounded-2xl p-8">
-
+            <div class="rounded-2xl bg-gray-800 p-8">
                 <form @submit.prevent="submit" class="space-y-5">
-
                     <!-- Name -->
                     <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Name</label>
+                        <label class="mb-1 block text-sm text-gray-400"
+                            >Name</label
+                        >
                         <input
                             v-model="form.name"
                             type="text"
                             required
                             autofocus
-                            class="w-full bg-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Your name"
                         />
-                        <InputError :message="form.errors.name" class="mt-1 text-red-400 text-xs" />
+                        <InputError
+                            :message="form.errors.name"
+                            class="mt-1 text-xs text-red-400"
+                        />
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Email</label>
+                        <label class="mb-1 block text-sm text-gray-400"
+                            >Email</label
+                        >
                         <input
                             v-model="form.email"
                             type="email"
                             required
-                            class="w-full bg-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="you@example.com"
                         />
-                        <InputError :message="form.errors.email" class="mt-1 text-red-400 text-xs" />
+                        <InputError
+                            :message="form.errors.email"
+                            class="mt-1 text-xs text-red-400"
+                        />
                     </div>
 
                     <!-- Password -->
                     <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Password</label>
+                        <label class="mb-1 block text-sm text-gray-400"
+                            >Password</label
+                        >
                         <input
                             v-model="form.password"
                             type="password"
                             required
-                            class="w-full bg-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="••••••••"
                         />
-                        <InputError :message="form.errors.password" class="mt-1 text-red-400 text-xs" />
+                        <InputError
+                            :message="form.errors.password"
+                            class="mt-1 text-xs text-red-400"
+                        />
                     </div>
 
                     <!-- Confirm Password -->
                     <div>
-                        <label class="text-sm text-gray-400 mb-1 block">Confirm Password</label>
+                        <label class="mb-1 block text-sm text-gray-400"
+                            >Confirm Password</label
+                        >
                         <input
                             v-model="form.password_confirmation"
                             type="password"
                             required
-                            class="w-full bg-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="w-full rounded-lg bg-gray-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="••••••••"
                         />
-                        <InputError :message="form.errors.password_confirmation" class="mt-1 text-red-400 text-xs" />
+                        <InputError
+                            :message="form.errors.password_confirmation"
+                            class="mt-1 text-xs text-red-400"
+                        />
                     </div>
 
                     <!-- Submit -->
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg font-medium transition-colors"
-                        :class="{ 'opacity-50 cursor-not-allowed': form.processing }"
+                        class="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition-colors hover:bg-blue-500"
+                        :class="{
+                            'cursor-not-allowed opacity-50': form.processing,
+                        }"
                     >
                         Create Account
                     </button>
@@ -99,11 +119,13 @@ const submit = () => {
                     <!-- Login link -->
                     <p class="text-center text-sm text-gray-400">
                         Already have an account?
-                        <Link :href="route('login')" class="text-blue-400 hover:text-blue-300">
+                        <Link
+                            :href="route('login')"
+                            class="text-blue-400 hover:text-blue-300"
+                        >
                             Sign in
                         </Link>
                     </p>
-
                 </form>
             </div>
         </div>

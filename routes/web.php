@@ -20,10 +20,10 @@ Route::get('/', function () {
 // Phone detail
 Route::get('/phones/{id}', function (string $id) {
     $phone = Phone::with('reviews.user')->findOrFail($id);
+
     return Inertia::render('PhoneDetail', ['phone' => $phone]);
 });
 
-Route::post('/admin/phones/bulk-delete', [PhoneController::class, 'bulkDelete']);
 // Compare
 Route::get('/compare', function () {
     $phones = Phone::all();
@@ -76,12 +76,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/phones/{id}/edit', [AdminController::class, 'edit'])->name('admin.edit');
     Route::put('/phones/{id}', [AdminController::class, 'update'])->name('admin.update');
     Route::delete('/phones/{id}', [AdminController::class, 'destroy'])->name('admin.destroy');
+    Route::post('/phones/bulk-delete', [PhoneController::class, 'bulkDelete'])->name('admin.bulk-delete');
     Route::get('/reviews', [AdminController::class, 'reviews'])->name('admin.reviews');
     Route::delete('/reviews/{id}', [AdminController::class, 'destroyReview'])->name('admin.reviews.destroy');
-    
-    //scrape
+
+    // scrape
     Route::post('/bulk-scrape', [AdminController::class, 'bulkScrape'])->name('admin.bulk-scrape');
+    Route::post('/scrape-links', [AdminController::class, 'scrapeLinks'])->name('admin.scrape-links');
+    Route::post('/scrape-product', [AdminController::class, 'scrapeProduct'])->name('admin.scrape-product');
 });
 
-
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

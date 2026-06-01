@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import Navbar from '@/components/Navbar.vue';
+import Navbar from '@/Components/Site/Navbar.vue';
 import { useCompareStore } from '@/stores/compareStore';
 import type { Phone } from '@/types/Phone';
 

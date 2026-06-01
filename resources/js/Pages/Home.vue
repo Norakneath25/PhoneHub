@@ -1,10 +1,10 @@
 <template>
     <div class="bg-gray-900">
         <Navbar />
-        <Hero />
+        <HomeHero />
         <div id="phones-section">
             <!-- ← add this wrapper -->
-            <Filter :phones="phones" />
+            <PhoneFilter :phones="phones" />
         </div>
         <CompareBar />
         <Footer />
@@ -12,11 +12,11 @@
 </template>
 
 <script setup lang="ts">
-import CompareBar from '@/components/compareBar.vue';
-import Filter from '@/components/Filter.vue';
-import Footer from '@/components/Footer.vue';
-import Hero from '@/components/Hero.vue';
-import Navbar from '@/components/Navbar.vue';
+import CompareBar from '@/Components/Phones/CompareBar.vue';
+import PhoneFilter from '@/Components/Phones/PhoneFilter.vue';
+import Footer from '@/Components/Site/Footer.vue';
+import HomeHero from '@/Components/Site/HomeHero.vue';
+import Navbar from '@/Components/Site/Navbar.vue';
 import type { Phone } from '@/types/Phone';
 
 defineProps<{
