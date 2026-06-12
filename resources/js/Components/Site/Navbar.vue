@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import PhoneIcon from '@/Components/PhoneIcon.vue';
 
 const isOpen = ref(false);
 const page = usePage();
@@ -55,11 +56,10 @@ const isActive = (href: string) => {
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
                 <Link href="/" class="flex items-center gap-3">
-                    <span
-                        class="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500 text-sm font-black text-white"
-                    >
-                        PH
-                    </span>
+                    <PhoneIcon
+                        :size="22"
+                        icon-class="text-sky-400"
+                    />
                     <span class="text-xl font-extrabold text-white">
                         Phone<span class="text-sky-300">Hub</span>
                     </span>

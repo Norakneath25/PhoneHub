@@ -258,6 +258,12 @@ const submitBulkScrape = async () => {
                             Manage reviews
                         </Link>
                         <Link
+                            href="/admin/blog"
+                            class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                            Manage blog
+                        </Link>
+                        <Link
                             href="/dashboard"
                             class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
                         >
@@ -304,6 +310,12 @@ const submitBulkScrape = async () => {
                     </p>
                 </div>
                 <div class="flex gap-3">
+                    <Link
+                        href="/admin/blog/create"
+                        class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+                    >
+                        New blog post
+                    </Link>
                     <Link
                         href="/admin/phones/create"
                         class="rounded-full bg-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-400"

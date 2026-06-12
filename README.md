@@ -125,6 +125,7 @@ PhoneHub/
 ├── app/
 │   ├── Http/Controllers/
 │   │   ├── AdminController.php     # Phone CRUD + scraping
+│   │   ├── AdminBlogController.php # Admin blog CRUD
 │   │   ├── BlogController.php      # Blog listing & single post
 │   │   ├── PhoneController.php     # Phone browsing & compare
 │   │   └── ReviewController.php    # User reviews
@@ -145,6 +146,7 @@ PhoneHub/
 │       │   └── *.vue               # Reusable auth/form UI components
 │       └── Pages/
 │           ├── Admin/
+│           │   └── Blog/           # Admin blog list/create/edit pages
 │           ├── Blog/
 │           │   ├── Index.vue
 │           │   └── Show.vue
@@ -162,7 +164,7 @@ PhoneHub/
 - ⭐ User reviews and ratings
 - 📝 Phone blog with categories (Reviews, News, Comparisons, Tips & Tricks)
 - 🔐 Authentication (register, login, logout)
-- 🛠 Admin panel with phone CRUD
+- 🛠 Admin panel with phone CRUD, blog publishing (create, edit, delete), and review management
 - 🤖 Bulk scraping from Nika2u and IMobi
 
 ---
@@ -211,6 +213,19 @@ Blog posts are stored in the `blog_posts` database table and displayed at:
 
 - `/blog` for the blog list
 - `/blog/{slug}` for a single article
+- `/admin/blog` for admin blog management
+- `/admin/blog/create` for publishing a new blog post
+
+### Where blog data comes from
+
+The public blog reads from the `blog_posts` table through `BlogController`.
+Default starter posts live in:
+
+```text
+database/seeders/BlogPostSeeder.php
+```
+
+If the database has no blog posts yet, the app falls back to those default seeder posts so `/blog` is not empty during setup.
 
 ### Seed the default blog posts
 
@@ -226,15 +241,26 @@ The seed data lives in:
 database/seeders/BlogPostSeeder.php
 ```
 
-### Add or edit blog posts
+The seeder uses `updateOrCreate` by `slug`, so re-running it updates existing seeded posts instead of duplicating them.
 
-Currently, the project does not have a blog admin editor page. To update the blog, edit `database/seeders/BlogPostSeeder.php`, then run:
+### Post blog articles from the admin panel
+
+1. Create or promote an admin user.
+2. Sign in at `/login`.
+3. Open `/admin/blog`.
+4. Click **New post**.
+5. Fill in the title, category, author, excerpt, image URL, content HTML, tags, and featured status.
+6. Submit the form. The post is saved to `blog_posts` and appears on `/blog`.
+
+Admins can also edit or delete existing posts from `/admin/blog`. The edit form supports auto-generating the slug from the title (on new posts), and the delete action removes the post immediately after confirmation.
+
+### Add blog posts from code or CLI
+
+You can still manage starter content in the seeder. Edit `database/seeders/BlogPostSeeder.php`, then run:
 
 ```bash
 php artisan db:seed --class=BlogPostSeeder
 ```
-
-The seeder uses `updateOrCreate` by `slug`, so re-running it updates existing seeded posts instead of duplicating them.
 
 Each blog post supports these fields:
 
@@ -255,58 +281,72 @@ Each blog post supports these fields:
 
 ## 🌐 Deploying to DigitalOcean
 
-```bash
-# On the server, after cloning the repository:
-cp .env.example .env
-composer install --no-dev --optimize-autoloader
-npm install
-npm run build
-php artisan key:generate
+PhoneHub is hosted on a DigitalOcean Droplet with Ubuntu LTS, Nginx, PHP 8.3+, Composer, Node.js 20+, and MySQL/MariaDB.
 
-# Set APP_URL, DB credentials, and ADMIN_* values in .env, then:
-php artisan migrate
-php artisan db:seed --class=BlogPostSeeder
-php artisan admin:create
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
+### 1. Create the droplet
 
-> ⚠️ Never run `php artisan migrate:fresh` on production — it will wipe all your data.
+Provision a standard Ubuntu droplet (at least 2 GB RAM recommended) and point your domain to its public IP.
 
-## 🌐 Deploying to Namecheap Shared Hosting
-
-This project can run on Namecheap Shared Hosting if your hosting account supports:
-
-- PHP 8.3 or newer
-- Composer
-- Node.js 20 or newer
-- MySQL or MariaDB
-- SSH access
-
-Namecheap shared hosting is suitable for a small PhoneHub deployment. For heavier traffic, long-running queues, or frequent scraping jobs, use a VPS instead.
-
-### 1. Upload the project
-
-Upload or clone the project into your hosting account. Keep the full Laravel project outside the public web root when possible.
-
-Your domain or subdomain document root must point to:
-
-```text
-PhoneHub/public
-```
-
-If cPanel does not let you point the domain directly to `public`, place the project outside `public_html` and configure the domain document root to the app's `public` folder.
-
-### 2. Configure `.env`
-
-Create the production environment file:
+SSH into your droplet and install the required packages:
 
 ```bash
-cp .env.example .env
+sudo apt update && sudo apt upgrade -y
+
+# Install Nginx
+sudo apt install nginx -y
+
+# Install PHP 8.3 and extensions
+sudo apt install php8.3-fpm php8.3-cli php8.3-mbstring php8.3-xml php8.3-curl \
+  php8.3-mysql php8.3-sqlite3 php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl -y
+
+# Install Composer
+sudo apt install composer -y
+
+# Install Node.js 20.x
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install nodejs -y
+
+# Install MySQL
+sudo apt install mysql-server -y
+sudo mysql_secure_installation
+
+# Install Git
+sudo apt install git -y
 ```
 
-Update these values:
+### 2. Create the database
+
+```bash
+sudo mysql -u root -p
+```
+
+Run these SQL commands:
+
+```sql
+CREATE DATABASE phonehub;
+CREATE USER 'phonehub_user'@'localhost' IDENTIFIED BY 'your_strong_password';
+GRANT ALL PRIVILEGES ON phonehub.* TO 'phonehub_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+### 3. Clone the repository
+
+```bash
+cd /var/www
+sudo git clone https://github.com/Norakneath25/PhoneHub.git
+sudo chown -R $USER:$USER PhoneHub
+cd PhoneHub
+```
+
+### 4. Configure `.env`
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Set the production values:
 
 ```env
 APP_ENV=production
@@ -314,18 +354,18 @@ APP_DEBUG=false
 APP_URL=https://your-domain.com
 
 DB_CONNECTION=mysql
-DB_HOST=localhost
+DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=your_cpanel_database_name
-DB_USERNAME=your_cpanel_database_user
-DB_PASSWORD=your_database_password
+DB_DATABASE=phonehub
+DB_USERNAME=phonehub_user
+DB_PASSWORD=your_strong_password
+
+ADMIN_NAME="PhoneHub Admin"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="change-this-password"
 ```
 
-Use the exact database name and username created in cPanel. On many shared hosts, cPanel prefixes them with your account name.
-
-### 3. Install dependencies and build assets
-
-Run these commands over SSH from the project folder:
+### 5. Install dependencies and build assets
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -340,37 +380,115 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-### 4. Set writable folders
+### 6. Set permissions
 
-Make sure Laravel can write to:
-
-```text
-storage
-bootstrap/cache
+```bash
+sudo chown -R www-data:www-data /var/www/PhoneHub/storage
+sudo chown -R www-data:www-data /var/www/PhoneHub/bootstrap/cache
+sudo chmod -R 775 /var/www/PhoneHub/storage
+sudo chmod -R 775 /var/www/PhoneHub/bootstrap/cache
 ```
 
-If uploads or cached files fail, check permissions for those folders in cPanel File Manager or over SSH.
+### 7. Configure Nginx
 
-### Production `.env` checklist
+Create an Nginx site configuration:
 
-Set these before running the production commands:
-
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://your-domain.com
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=phonehub
-DB_USERNAME=your_database_user
-DB_PASSWORD=your_database_password
-
-ADMIN_NAME="PhoneHub Admin"
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="change-this-password"
+```bash
+sudo nano /etc/nginx/sites-available/phonehub
 ```
+
+Paste this configuration (replace `your-domain.com` with your actual domain):
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain.com www.your-domain.com;
+
+    root /var/www/PhoneHub/public;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+Enable the site and reload Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/phonehub /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 8. Enable HTTPS with Let's Encrypt
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+```
+
+Certbot will automatically update your Nginx config and set up auto-renewal.
+
+### 9. Run the queue worker (optional)
+
+If scraping or other queued jobs are used:
+
+```bash
+# Test manually first
+php artisan queue:work --tries=1 --timeout=0
+
+# For production, set up Supervisor
+sudo apt install supervisor -y
+sudo nano /etc/supervisor/conf.d/phonehub-worker.conf
+```
+
+Add:
+
+```ini
+[program:phonehub-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/PhoneHub/artisan queue:work --tries=1 --timeout=0
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/PhoneHub/storage/logs/worker.log
+```
+
+Then:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start phonehub-worker:*
+```
+
+### 10. Set up the scheduler cron
+
+```bash
+sudo crontab -e
+```
+
+Add:
+
+```bash
+* * * * * cd /var/www/PhoneHub && php artisan schedule:run >> /dev/null 2>&1
+```
+
+> ⚠️ Never run `php artisan migrate:fresh` on production. It wipes the database.
 
 ---
 

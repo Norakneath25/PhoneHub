@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminBlogController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PhoneController;
@@ -79,6 +80,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/phones/bulk-delete', [PhoneController::class, 'bulkDelete'])->name('admin.bulk-delete');
     Route::get('/reviews', [AdminController::class, 'reviews'])->name('admin.reviews');
     Route::delete('/reviews/{id}', [AdminController::class, 'destroyReview'])->name('admin.reviews.destroy');
+
+    // Blog posts
+    Route::get('/blog', [AdminBlogController::class, 'index'])->name('admin.blog.index');
+    Route::get('/blog/create', [AdminBlogController::class, 'create'])->name('admin.blog.create');
+    Route::post('/blog', [AdminBlogController::class, 'store'])->name('admin.blog.store');
+    Route::get('/blog/{post}/edit', [AdminBlogController::class, 'edit'])->name('admin.blog.edit');
+    Route::put('/blog/{post}', [AdminBlogController::class, 'update'])->name('admin.blog.update');
+    Route::delete('/blog/{post}', [AdminBlogController::class, 'destroy'])->name('admin.blog.destroy');
 
     // scrape
     Route::post('/bulk-scrape', [AdminController::class, 'bulkScrape'])->name('admin.bulk-scrape');

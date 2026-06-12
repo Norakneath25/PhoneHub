@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import PhoneIcon from '@/Components/PhoneIcon.vue';
+
 const year = new Date().getFullYear();
 </script>
 
@@ -8,7 +10,8 @@ const year = new Date().getFullYear();
             class="mx-auto grid max-w-7xl gap-8 sm:px-6 md:grid-cols-[1fr_180px_220px] lg:px-8"
         >
             <div>
-                <h2 class="text-xl font-extrabold">
+                <h2 class="flex items-center gap-2 text-xl font-extrabold">
+                    <PhoneIcon :size="20" icon-class="text-sky-400" />
                     Phone<span class="text-sky-300">Hub</span>
                 </h2>
                 <p class="mt-3 max-w-md text-sm leading-6 text-slate-400">

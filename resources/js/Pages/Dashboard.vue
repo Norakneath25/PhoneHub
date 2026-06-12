@@ -2,6 +2,7 @@
 import type { PageProps } from '@inertiajs/core';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import PhoneIcon from '@/Components/PhoneIcon.vue';
 import Navbar from '@/Components/Site/Navbar.vue';
 
 type DashboardUser = {
@@ -55,7 +56,10 @@ const primaryLinks = computed(() => [
                 class="grid gap-8 border-b border-white/10 pb-10 lg:grid-cols-[1fr_360px]"
             >
                 <div>
-                    <p class="text-sm font-semibold text-sky-300">Dashboard</p>
+                    <p class="flex items-center gap-2 text-sm font-semibold text-sky-300">
+                        <PhoneIcon :size="16" icon-class="text-sky-400" />
+                        Dashboard
+                    </p>
                     <h1
                         class="mt-3 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl"
                     >
