@@ -1,7 +1,5 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createPinia } from 'pinia';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import { createApp, h } from 'vue';
 import type { DefineComponent } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
@@ -19,13 +17,10 @@ createInertiaApp({
         color: '#4B5563',
     },
     setup({ el, App, props, plugin }) {
-        const pinia = createPinia();
-        pinia.use(piniaPluginPersistedstate);
         createApp({
             render: () => h(App, props),
         })
             .use(plugin)
-            .use(pinia)
             .use(ZiggyVue)
             .mount(el!);
     },

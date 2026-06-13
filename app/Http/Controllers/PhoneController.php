@@ -27,9 +27,9 @@ class PhoneController extends Controller
     public function search(Request $request)
     {
         // Home page: return separate curated lists
-        $recommended = Phone::orderBy('rating', 'desc')->take(6)->get();
-        $latest = Phone::orderBy('release_date', 'desc')->take(6)->get();
-        $budget = Phone::where('price', '<', 500)->orderBy('price', 'asc')->take(6)->get();
+        $recommended = Phone::orderBy('rating', 'desc')->take(4)->get();
+        $latest = Phone::orderBy('release_date', 'desc')->take(4)->get();
+        $budget = Phone::where('price', '<', 500)->orderBy('price', 'asc')->take(4)->get();
 
         // If user searches or filters, show matching results
         if ($request->filled('q') || $request->filled('brand') || $request->filled('ram') || $request->filled('storage') || $request->filled('sort')) {

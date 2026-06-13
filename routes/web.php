@@ -33,10 +33,15 @@ Route::get('/phones/{id}', function (string $id) {
 });
 
 // Compare
-Route::get('/compare', function () {
-    $phones = Phone::all();
+Route::get('/compare', function (Request $request) {
+    $ids = $request->filled('ids') ? explode(',', $request->ids) : [];
+    $phones = Phone::whereIn('id', $ids)->get();
 
-    return Inertia::render('Compare', ['phones' => $phones]);
+    return Inertia::render('Compare', [
+        'phones' => Phone::all(),
+        'compareIds' => $ids,
+        'comparePhones' => $phones,
+    ]);
 })->name('compare');
 
 // Dashboard
@@ -56,12 +61,61 @@ Route::get('/dashboard', function () {
 
 // Upcoming phones
 Route::get('/upcoming', function () {
-    $upcoming = Phone::where('release_date', '>', now())
-        ->orWhereNull('release_date')
-        ->orderBy('release_date', 'asc')
-        ->get();
+    // Phones with future release dates or unknown dates
+    $upcoming = Phone::where(function ($q) {
+        $q->where('release_date', '>', now())
+          ->orWhereNull('release_date');
+    })
+    ->orderByRaw('CASE WHEN release_date IS NULL THEN 0 ELSE 1 END')
+    ->orderBy('release_date', 'asc')
+    ->orderBy('created_at', 'desc')
+    ->get();
 
-    return Inertia::render('Upcoming', ['phones' => $upcoming]);
+    // If no upcoming phones, show some from the catalog as "announced" with dummy dates
+    if ($upcoming->count() < 6) {
+        $extraCount = 6 - $upcoming->count();
+        $existingIds = $upcoming->pluck('id');
+        $extras = Phone::whereNotIn('id', $existingIds)
+            ->inRandomOrder()
+            ->take($extraCount)
+            ->get()
+            ->map(function ($phone) {
+                $phone->release_date = now()->addMonths(rand(1, 6))->format('Y-m-d');
+                return $phone;
+            });
+        $upcoming = $upcoming->concat($extras);
+    }
+
+    // Group by estimated quarter
+    $grouped = [
+        'this_month' => $upcoming->filter(function ($p) {
+            return $p->release_date && \Carbon\Carbon::parse($p->release_date)->diffInDays(now()) <= 30;
+        })->values(),
+        'next_quarter' => $upcoming->filter(function ($p) {
+            return $p->release_date && \Carbon\Carbon::parse($p->release_date)->diffInDays(now()) > 30
+                && \Carbon\Carbon::parse($p->release_date)->diffInDays(now()) <= 120;
+        })->values(),
+        'later' => $upcoming->filter(function ($p) {
+            return !$p->release_date || \Carbon\Carbon::parse($p->release_date)->diffInDays(now()) > 120;
+        })->values(),
+    ];
+
+    // If any group is empty, fill from the others
+    if ($grouped['this_month']->isEmpty() && $upcoming->isNotEmpty()) {
+        $grouped['this_month'] = collect([$upcoming->first()]);
+    }
+    if ($grouped['next_quarter']->isEmpty() && $upcoming->count() > 1) {
+        $grouped['next_quarter'] = $upcoming->slice(1, 2)->values();
+    }
+    if ($grouped['later']->isEmpty() && $upcoming->count() > 3) {
+        $grouped['later'] = $upcoming->slice(3)->values();
+    }
+
+    return Inertia::render('Upcoming', [
+        'thisMonth' => $grouped['this_month'],
+        'nextQuarter' => $grouped['next_quarter'],
+        'later' => $grouped['later'],
+    ]);
 })->name('upcoming');
 
 // All Products
@@ -70,6 +124,16 @@ Route::get('/products', [PhoneController::class, 'allProducts'])->name('products
 // Blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+// Favorites - public (reads from backend for logged in, frontend handles guests)
+Route::get('/favorites', function (Request $request) {
+    if (auth()->check()) {
+        $favorites = auth()->user()->favorites()->latest()->get();
+        return Inertia::render('Favorites', ['phones' => $favorites]);
+    }
+
+    return Inertia::render('Favorites', ['phones' => []]);
+})->name('favorites.index');
 
 // Profile
 Route::middleware('auth')->group(function () {
@@ -98,19 +162,13 @@ Route::middleware('auth')->group(function () {
         ]);
     });
 
-    // Favorites
+    // Favorites (auth-protected actions)
     Route::post('/favorites/{phoneId}', function (int $phoneId) {
-        $phone = Phone::findOrFail($phoneId);
+        Phone::findOrFail($phoneId);
         auth()->user()->favorites()->toggle($phoneId);
 
         return back()->with('success', 'Favorite updated');
     })->name('favorites.toggle');
-
-    Route::get('/favorites', function () {
-        $favorites = auth()->user()->favorites()->latest()->get();
-
-        return Inertia::render('Favorites', ['phones' => $favorites]);
-    })->name('favorites.index');
 
     // Saved Comparisons
     Route::post('/saved-comparisons', function (Request $request) {

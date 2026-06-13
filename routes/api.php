@@ -11,6 +11,13 @@ Route::get('/user', function (Request $request) {
 
 Route::apiResource('/phones', PhoneController::class);
 
+// Public: get phones by IDs (for guest favorites)
+Route::post('/phones-by-ids', function (Request $request) {
+    $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+    $phones = \App\Models\Phone::whereIn('id', $request->ids)->get();
+    return response()->json(['phones' => $phones]);
+});
+
 // Public review routes
 Route::get('/reviews', [ReviewController::class, 'index']);
 Route::get('/reviews/{id}', [ReviewController::class, 'getIndexById']);

@@ -24,9 +24,11 @@ const navLinks = computed(() => {
     ];
 
     if (auth.value.user) {
-        links.push({ label: 'Favorites', href: '/favorites' });
         links.push({ label: 'Dashboard', href: '/dashboard' });
     }
+    
+    // Favorites always visible
+    links.push({ label: 'Favorites', href: '/favorites' });
 
     if (auth.value.user?.is_admin) {
         links.push({ label: 'Admin', href: '/admin' });
