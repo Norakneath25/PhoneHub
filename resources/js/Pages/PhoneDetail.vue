@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Navbar from '@/Components/Site/Navbar.vue';
-import PhoneCardDetail from '@/Components/Phones/PhoneDetailCard.vue';
-import PhoneReviews from '@/Components/Phones/PhoneReviews.vue';
-import type { Phone } from '@/types/Phone';
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import PhoneCardDetail from '@/Components/Phones/PhoneDetailCard.vue';
+import PhoneReviews from '@/Components/Phones/PhoneReviews.vue';
+import Navbar from '@/Components/Site/Navbar.vue';
+import type { Phone } from '@/types/Phone';
 
 const props = defineProps<{
     phone: Phone;
