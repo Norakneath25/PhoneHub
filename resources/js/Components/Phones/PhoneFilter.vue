@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useSearchStore } from '@/stores/searchStore';
+import { computed } from 'vue';
 import type { Phone } from '@/types/Phone';
 import PhoneGrid from './PhoneGrid.vue';
 
 const props = defineProps<{
     phones: Phone[];
+    filters?: {
+        q?: string;
+        brand?: string;
+        ram?: string;
+        storage?: string;
+        sort?: string;
+    };
 }>();
 
-const phones = ref<Phone[]>(props.phones);
-const selectedBrand = ref('All');
-const selectedRAM = ref('All');
-const selectedStorage = ref('All');
-const sortBy = ref('recommended');
-const searchStore = useSearchStore();
+const emit = defineEmits<{
+    applyFilters: [filters: { q?: string; brand?: string; ram?: string; storage?: string; sort?: string }];
+}>();
 
 const sortOptions = [
     { key: 'recommended', label: 'Recommended' },
@@ -22,119 +25,24 @@ const sortOptions = [
     { key: 'price_high', label: 'Price: High to Low' },
 ];
 
-const storageRank = (storage: string) => {
-    const match = storage.match(/^(\d+(?:\.\d+)?)(GB|TB)$/i);
-
-    if (!match) {
-        return Number.MAX_SAFE_INTEGER;
-    }
-
-    const value = Number(match[1]);
-    const unit = match[2].toUpperCase();
-
-    return unit === 'TB' ? value * 1024 : value;
-};
-
-const storageOptionsForPhone = (storage: string) => {
-    const matches = storage
-        .toUpperCase()
-        .matchAll(/(\d+(?:\.\d+)?)\s*(GB|TB)(?!\s*RAM)/g);
-
-    return [...matches]
-        .map((match) => {
-            const value = Number(match[1]);
-            const unit = match[2];
-
-            if (unit === 'GB' && value < 32) {
-                return null;
-            }
-
-            return `${match[1]}${unit}`;
-        })
-        .filter((option): option is string => option !== null);
-};
-
 const brands = computed(() => {
-    const unique = [...new Set(phones.value.map((phone) => phone.brand))];
-
+    // Unique brands from ALL available phones (not filtered ones)
+    // This is fine to keep on frontend since it's just for UI display
+    const unique = [...new Set(props.phones.map((phone) => phone.brand))];
     return ['All', ...unique];
 });
 
 const rams = computed(() => {
-    const unique = [...new Set(phones.value.map((phone) => phone.ram))];
-
+    const unique = [...new Set(props.phones.map((phone) => phone.ram))];
     return ['All', ...unique.sort()];
 });
 
-const storages = computed(() => {
-    const unique = [
-        ...new Set(
-            phones.value.flatMap((phone) =>
-                storageOptionsForPhone(phone.storage),
-            ),
-        ),
-    ];
-
-    return ['All', ...unique.sort((a, b) => storageRank(a) - storageRank(b))];
-});
-
-const filteredPhones = computed(() => {
-    let result = phones.value;
-
-    if (selectedBrand.value !== 'All') {
-        result = result.filter((phone) => phone.brand === selectedBrand.value);
-    }
-
-    if (selectedRAM.value !== 'All') {
-        result = result.filter((phone) => phone.ram === selectedRAM.value);
-    }
-
-    if (selectedStorage.value !== 'All') {
-        result = result.filter((phone) =>
-            storageOptionsForPhone(phone.storage).includes(
-                selectedStorage.value,
-            ),
-        );
-    }
-
-    if (searchStore.query) {
-        const query = searchStore.query.toLowerCase();
-
-        result = result.filter(
-            (phone) =>
-                phone.brand.toLowerCase().includes(query) ||
-                phone.model.toLowerCase().includes(query),
-        );
-    }
-
-    return result;
-});
-
-const sortedPhones = computed(() => {
-    const filtered = filteredPhones.value;
-
-    if (sortBy.value === 'recommended') {
-        return [...filtered].sort((a, b) => b.rating - a.rating);
-    }
-
-    if (sortBy.value === 'latest') {
-        return [...filtered].sort(
-            (a, b) =>
-                new Date(b.release_date).getTime() -
-                new Date(a.release_date).getTime(),
-        );
-    }
-
-    if (sortBy.value === 'price_low') {
-        return [...filtered].sort((a, b) => a.price - b.price);
-    }
-
-    if (sortBy.value === 'price_high') {
-        return [...filtered].sort((a, b) => b.price - a.price);
-    }
-
-    return filtered;
-});
+const applyFilter = (key: string, value: string) => {
+    emit('applyFilters', {
+        ...props.filters,
+        [key]: value,
+    });
+};
 </script>
 
 <template>
@@ -151,13 +59,13 @@ const sortedPhones = computed(() => {
                         Browse the current lineup
                     </h2>
                     <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                        Showing {{ sortedPhones.length }} of
-                        {{ phones.length }} phones.
+                        Showing {{ phones.length }} phones.
                     </p>
                 </div>
 
                 <select
-                    v-model="sortBy"
+                    :value="filters?.sort ?? 'recommended'"
+                    @change="applyFilter('sort', ($event.target as HTMLSelectElement).value)"
                     class="h-11 rounded-lg border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none focus:border-sky-300/50"
                 >
                     <option
@@ -180,10 +88,10 @@ const sortedPhones = computed(() => {
                         <button
                             v-for="brand in brands"
                             :key="brand"
-                            @click="selectedBrand = brand"
+                            @click="applyFilter('brand', brand)"
                             :class="[
                                 'rounded-full px-4 py-2 text-sm font-medium transition',
-                                selectedBrand === brand
+                                (filters?.brand ?? 'All') === brand
                                     ? 'bg-white text-slate-950'
                                     : 'bg-white/[0.05] text-slate-300 hover:bg-white/10 hover:text-white',
                             ]"
@@ -199,10 +107,10 @@ const sortedPhones = computed(() => {
                         <button
                             v-for="ram in rams"
                             :key="ram"
-                            @click="selectedRAM = ram"
+                            @click="applyFilter('ram', ram)"
                             :class="[
                                 'rounded-full px-4 py-2 text-sm font-medium transition',
-                                selectedRAM === ram
+                                (filters?.ram ?? 'All') === ram
                                     ? 'bg-white text-slate-950'
                                     : 'bg-white/[0.05] text-slate-300 hover:bg-white/10 hover:text-white',
                             ]"
@@ -218,20 +126,12 @@ const sortedPhones = computed(() => {
                     </p>
                     <div class="max-w-xs">
                         <select
-                            v-model="selectedStorage"
+                            :value="filters?.storage ?? 'All'"
+                            @change="applyFilter('storage', ($event.target as HTMLSelectElement).value)"
                             class="h-11 w-full rounded-lg border border-white/10 bg-white/[0.05] px-4 text-sm text-white outline-none focus:border-sky-300/50"
                         >
-                            <option
-                                v-for="storage in storages"
-                                :key="storage"
-                                :value="storage"
-                                class="bg-slate-950"
-                            >
-                                {{
-                                    storage === 'All'
-                                        ? 'All storage options'
-                                        : storage
-                                }}
+                            <option value="All" class="bg-slate-950">
+                                All storage options
                             </option>
                         </select>
                     </div>
@@ -239,6 +139,6 @@ const sortedPhones = computed(() => {
             </div>
         </div>
 
-        <PhoneGrid :phones="sortedPhones" />
+        <PhoneGrid :phones="phones" />
     </section>
 </template>

@@ -252,6 +252,12 @@ const submitBulkScrape = async () => {
                             View site
                         </Link>
                         <Link
+                            href="/admin/stores"
+                            class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                            Manage stores
+                        </Link>
+                        <Link
                             href="/admin/reviews"
                             class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10 hover:text-white"
                         >

@@ -17,11 +17,14 @@ const currentPath = computed(() => page.url);
 const navLinks = computed(() => {
     const links = [
         { label: 'Home', href: '/' },
+        { label: 'Products', href: '/products' },
+        { label: 'Upcoming', href: '/upcoming' },
         { label: 'Compare', href: '/compare' },
         { label: 'Blog', href: '/blog' },
     ];
 
     if (auth.value.user) {
+        links.push({ label: 'Favorites', href: '/favorites' });
         links.push({ label: 'Dashboard', href: '/dashboard' });
     }
 

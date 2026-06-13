@@ -30,4 +30,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // User has many favorite phones
+    public function favorites()
+    {
+        return $this->belongsToMany(Phone::class, 'favorites')->withTimestamps();
+    }
+
+    // User has many saved comparisons
+    public function savedComparisons()
+    {
+        return $this->hasMany(SavedComparison::class);
+    }
 }
+

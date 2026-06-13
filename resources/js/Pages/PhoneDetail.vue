@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import PhoneCardDetail from '@/Components/Phones/PhoneDetailCard.vue';
+import PhoneDetailCard from '@/Components/Phones/PhoneDetailCard.vue';
 import PhoneReviews from '@/Components/Phones/PhoneReviews.vue';
 import Navbar from '@/Components/Site/Navbar.vue';
 import type { Phone } from '@/types/Phone';
@@ -27,7 +27,7 @@ const onReviewAdded = (newReview: any) => {
 <template>
     <div class="bg-gray-950">
         <Navbar />
-        <PhoneCardDetail :phone="phone" />
+        <PhoneDetailCard :phone="phone" />
         <PhoneReviews
             :reviews="phone.reviews"
             :phone-id="phone.id"

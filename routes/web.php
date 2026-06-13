@@ -6,23 +6,30 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PhoneController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Phone;
+use App\Models\PhoneStorePrice;
 use App\Models\Review;
+use App\Models\SavedComparison;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Home
-Route::get('/', function () {
-    $phones = Phone::all();
-
-    return Inertia::render('Home', ['phones' => $phones]);
-})->name('home');
+Route::get('/', [PhoneController::class, 'search'])->name('home');
 
 // Phone detail
 Route::get('/phones/{id}', function (string $id) {
     $phone = Phone::with('reviews.user')->findOrFail($id);
+    $storePrices = PhoneStorePrice::with('store')
+        ->where('phone_id', $id)
+        ->where('in_stock', true)
+        ->orderBy('price', 'asc')
+        ->get();
 
-    return Inertia::render('PhoneDetail', ['phone' => $phone]);
+    return Inertia::render('PhoneDetail', [
+        'phone' => $phone,
+        'storePrices' => $storePrices,
+    ]);
 });
 
 // Compare
@@ -34,10 +41,33 @@ Route::get('/compare', function () {
 
 // Dashboard
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-// Blog
+    $favorites = [];
+    $comparisons = [];
+    if (auth()->check()) {
+        $favorites = auth()->user()->favorites()->latest()->take(8)->get();
+        $comparisons = auth()->user()->savedComparisons()->latest()->get();
+    }
 
+    return Inertia::render('Dashboard', [
+        'favorites' => $favorites,
+        'savedComparisons' => $comparisons,
+    ]);
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+// Upcoming phones
+Route::get('/upcoming', function () {
+    $upcoming = Phone::where('release_date', '>', now())
+        ->orWhereNull('release_date')
+        ->orderBy('release_date', 'asc')
+        ->get();
+
+    return Inertia::render('Upcoming', ['phones' => $upcoming]);
+})->name('upcoming');
+
+// All Products
+Route::get('/products', [PhoneController::class, 'allProducts'])->name('products');
+
+// Blog
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
@@ -67,6 +97,43 @@ Route::middleware('auth')->group(function () {
             'data' => $review,
         ]);
     });
+
+    // Favorites
+    Route::post('/favorites/{phoneId}', function (int $phoneId) {
+        $phone = Phone::findOrFail($phoneId);
+        auth()->user()->favorites()->toggle($phoneId);
+
+        return back()->with('success', 'Favorite updated');
+    })->name('favorites.toggle');
+
+    Route::get('/favorites', function () {
+        $favorites = auth()->user()->favorites()->latest()->get();
+
+        return Inertia::render('Favorites', ['phones' => $favorites]);
+    })->name('favorites.index');
+
+    // Saved Comparisons
+    Route::post('/saved-comparisons', function (Request $request) {
+        $request->validate([
+            'name' => 'nullable|string|max:255',
+            'phone_ids' => 'required|array|min:2|max:3',
+            'phone_ids.*' => 'exists:phones,id',
+        ]);
+
+        auth()->user()->savedComparisons()->create([
+            'name' => $request->name ?? 'Comparison ' . now()->format('M d, Y'),
+            'phone_ids' => $request->phone_ids,
+        ]);
+
+        return back()->with('success', 'Comparison saved!');
+    })->name('saved-comparisons.store');
+
+    Route::delete('/saved-comparisons/{id}', function (int $id) {
+        $comparison = SavedComparison::where('user_id', auth()->id())->findOrFail($id);
+        $comparison->delete();
+
+        return back()->with('success', 'Comparison deleted');
+    })->name('saved-comparisons.destroy');
 });
 
 // Admin
@@ -93,6 +160,58 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/bulk-scrape', [AdminController::class, 'bulkScrape'])->name('admin.bulk-scrape');
     Route::post('/scrape-links', [AdminController::class, 'scrapeLinks'])->name('admin.scrape-links');
     Route::post('/scrape-product', [AdminController::class, 'scrapeProduct'])->name('admin.scrape-product');
+
+    // Store management
+    Route::get('/stores', function () {
+        $stores = Store::withCount('phonePrices')->get();
+
+        return Inertia::render('Admin/Stores/Index', ['stores' => $stores]);
+    })->name('admin.stores.index');
+
+    Route::post('/stores', function (Request $request) {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'website_url' => 'required|url',
+            'logo_url' => 'nullable|url',
+        ]);
+
+        Store::create($request->all());
+
+        return redirect()->route('admin.stores.index')->with('success', 'Store added');
+    })->name('admin.stores.store');
+
+    Route::delete('/stores/{id}', function (int $id) {
+        Store::findOrFail($id)->delete();
+
+        return back()->with('success', 'Store deleted');
+    })->name('admin.stores.destroy');
+
+    // Store Prices for phones
+    Route::post('/phones/{phoneId}/prices', function (Request $request, int $phoneId) {
+        $request->validate([
+            'store_id' => 'required|exists:stores,id',
+            'price' => 'required|numeric|min:0',
+            'product_url' => 'nullable|url',
+            'in_stock' => 'boolean',
+        ]);
+
+        PhoneStorePrice::updateOrCreate(
+            ['phone_id' => $phoneId, 'store_id' => $request->store_id],
+            [
+                'price' => $request->price,
+                'product_url' => $request->product_url,
+                'in_stock' => $request->in_stock ?? true,
+            ]
+        );
+
+        return back()->with('success', 'Price updated');
+    })->name('admin.phones.prices.store');
+
+    Route::delete('/phones/prices/{priceId}', function (int $priceId) {
+        PhoneStorePrice::findOrFail($priceId)->delete();
+
+        return back()->with('success', 'Price deleted');
+    })->name('admin.phones.prices.destroy');
 });
 
 require __DIR__.'/auth.php';

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { useSearchStore } from '@/stores/searchStore';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-const searchStore = useSearchStore();
+const searchQuery = ref('');
 
 const handleSearch = () => {
-    const section = document.getElementById('phones-section');
-
-    if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
+    if (searchQuery.value.trim()) {
+        router.get('/', { q: searchQuery.value }, {
+            preserveScroll: true,
+        });
     }
 };
 </script>
@@ -40,15 +41,10 @@ const handleSearch = () => {
                     class="mt-8 flex max-w-2xl flex-col gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2 sm:flex-row"
                 >
                     <input
+                        v-model="searchQuery"
                         type="text"
-                        :value="searchStore.query"
-                        @input="
-                            (event) =>
-                                searchStore.setQuery(
-                                    (event.target as HTMLInputElement).value,
-                                )
-                        "
                         placeholder="Search iPhone, Galaxy, Pixel..."
+                        @keyup.enter="handleSearch"
                         class="min-h-12 flex-1 rounded-md border border-transparent bg-transparent px-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300/40"
                     />
                     <button

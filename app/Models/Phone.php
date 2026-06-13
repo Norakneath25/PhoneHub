@@ -30,4 +30,16 @@ class Phone extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    // One phone belongs to many favorites (via users)
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
+
+    // One phone has many prices across different stores
+    public function storePrices()
+    {
+        return $this->hasMany(PhoneStorePrice::class);
+    }
 }
